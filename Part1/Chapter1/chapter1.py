@@ -126,3 +126,19 @@ join_data[["payment_date", "payment_month"]].head()
 join_data[["payment_month", "price"]].groupby("payment_month").sum()
 
 # %%
+# 月別、商品別で売上データを集計する
+join_data[["payment_month", "item_name", "price", "quantity"]].groupby(
+    ["payment_month", "item_name"]
+).sum()
+
+# %%
+# pivot_table関数を使って集計結果を見やすく表示する
+pd.pivot_table(
+    join_data,
+    index="item_name",
+    columns="payment_month",
+    values=["price", "quantity"],
+    aggfunc="sum",
+)
+
+# %%
