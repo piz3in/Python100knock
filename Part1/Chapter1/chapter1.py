@@ -96,3 +96,16 @@ print(transaction["price"].sum())
 print(join_data["price"].sum())
 
 # %%
+# データ欠損数の確認
+join_data.isnull().sum()
+
+# %%
+# データ集計の出力
+join_data.describe()
+
+# %%
+# データ取得期間の把握
+print("first date: " + join_data["payment_date"].min())
+print("last  date: " + join_data["payment_date"].max())
+
+# %%
