@@ -86,3 +86,8 @@ print(f"item_master len:{len(item_master)}")
 print(f"join_data len:{len(join_data)}")
 
 # %%
+# 売上のデータ列を作成する
+join_data["price"] = join_data["item_price"] * join_data["quantity"]
+join_data[["item_price", "quantity", "price"]].head()
+
+# %%
