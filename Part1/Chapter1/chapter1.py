@@ -109,3 +109,20 @@ print("first date: " + join_data["payment_date"].min())
 print("last  date: " + join_data["payment_date"].max())
 
 # %%
+# 月別で売上データを集計する
+# 1.payment_dateのデータ型を確認する
+join_data.dtypes
+
+# %%
+# 2.payment_dateのデータ型をdatetime型に変換する
+join_data["payment_date"] = pd.to_datetime(join_data["payment_date"])
+
+# 3.payment_dateから年月のみを抽出したデータ列(payment_month)を作成する
+join_data["payment_month"] = join_data["payment_date"].dt.strftime("%Y-%m")
+join_data[["payment_date", "payment_month"]].head()
+
+# %%
+# 4.月毎に売上データを集計する
+join_data[["payment_month", "price"]].groupby("payment_month").sum()
+
+# %%
