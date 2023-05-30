@@ -1,5 +1,6 @@
 # %%
 import os
+import matplotlib.pyplot as plt
 import pandas as pd
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -140,5 +141,41 @@ pd.pivot_table(
     values=["price", "quantity"],
     aggfunc="sum",
 )
+
+# %%
+# 商品別の売上の推移を可視化する
+# 1.payment_monthをindexとして商品別の売上と販売数を集計する
+graph_data = pd.pivot_table(
+    join_data,
+    index="payment_month",
+    columns="item_name",
+    values=["price", "quantity"],
+    aggfunc="sum",
+)
+graph_data
+
+# %%
+# 2.商品別の売上の推移を可視化する
+fig = plt.figure(figsize=(10, 5))
+ax1 = fig.add_subplot(1, 2, 1)
+ax1.plot(graph_data.index, graph_data.loc[:, ("price", "PC-A")], label="PC-A")
+ax1.plot(graph_data.index, graph_data.loc[:, ("price", "PC-B")], label="PC-B")
+ax1.plot(graph_data.index, graph_data.loc[:, ("price", "PC-C")], label="PC-C")
+ax1.plot(graph_data.index, graph_data.loc[:, ("price", "PC-D")], label="PC-D")
+ax1.plot(graph_data.index, graph_data.loc[:, ("price", "PC-E")], label="PC-E")
+ax1.set_ylim([0, 80000000])
+ax1.legend(loc="lower right")
+ax1.set_title("price")
+
+# 3.商品別の販売数の推移を可視化する
+ax2 = fig.add_subplot(1, 2, 2)
+ax2.plot(graph_data.index, graph_data.loc[:, ("quantity", "PC-A")], label="PC-A")
+ax2.plot(graph_data.index, graph_data.loc[:, ("quantity", "PC-B")], label="PC-B")
+ax2.plot(graph_data.index, graph_data.loc[:, ("quantity", "PC-C")], label="PC-C")
+ax2.plot(graph_data.index, graph_data.loc[:, ("quantity", "PC-D")], label="PC-D")
+ax2.plot(graph_data.index, graph_data.loc[:, ("quantity", "PC-E")], label="PC-E")
+ax2.set_ylim([0, 600])
+ax2.legend(loc="lower right")
+ax2.set_title("quantity")
 
 # %%
