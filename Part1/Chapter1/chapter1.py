@@ -44,3 +44,22 @@ print(len(transaction_detail_2))
 print(len(transaction_detail))
 
 # %%
+# dataframe同士の結合（横の結合）
+# 最もデータ粒度が細かいtransaction_detailを主軸とする
+# 1.transaction_detailにtransactionを結合する
+# （1.追加するデータ列：[payment_date, customer_id], 2.共通するデータ列：transaction_id）
+join_transaction = pd.merge(
+    transaction_detail,
+    transaction[["transaction_id", "payment_date", "customer_id"]],
+    how="left",
+    on="transaction_id",
+)
+print("join_transaction:")
+join_transaction.head()
+
+# %%
+print(f"transaction_detail len:{len(transaction_detail)}")
+print(f"transaction len:{len(transaction)}")
+print(f"join_transaction len: {len(join_transaction)}")
+
+# %%
