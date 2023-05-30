@@ -63,3 +63,26 @@ print(f"transaction len:{len(transaction)}")
 print(f"join_transaction len: {len(join_transaction)}")
 
 # %%
+# 2.join_transactionにマスターデータ（customer_master, item_master）を結合する
+# customer_masterデータの結合
+# (1.追加するデータ列：すべて, 2.共通するデータ列：customer_id)
+join_data = pd.merge(join_transaction, customer_master, how="left", on="customer_id")
+print("join_data:")
+join_data.head()
+
+# %%
+print(f"join_transaction len:{len(join_transaction)}")
+print(f"customer_master len:{len(customer_master)}")
+print(f"join_data len:{len(join_data)}")
+
+# %%
+# item_masterデータの結合
+# (1.追加するデータ列：すべて, 2.共通するデータ列:item_id)
+join_data = pd.merge(join_data, item_master, how="left", on="item_id")
+join_data.head()
+
+# %%
+print(f"item_master len:{len(item_master)}")
+print(f"join_data len:{len(join_data)}")
+
+# %%
