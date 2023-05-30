@@ -91,3 +91,8 @@ join_data["price"] = join_data["item_price"] * join_data["quantity"]
 join_data[["item_price", "quantity", "price"]].head()
 
 # %%
+# 売上のデータ列の検算
+print(transaction["price"].sum())
+print(join_data["price"].sum())
+
+# %%
