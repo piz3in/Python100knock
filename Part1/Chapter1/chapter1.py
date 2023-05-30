@@ -29,3 +29,18 @@ print("transaction_detail:")
 transaction_detail_1.head()
 
 # %%
+# 複数ファイルにわたっているデータ（transaction, transaction_detail）の結合(縦の結合）
+transaction = pd.concat([transaction_1, transaction_2], ignore_index=True)
+print(len(transaction_1))
+print(len(transaction_2))
+print(len(transaction))
+
+# %%
+transaction_detail = pd.concat(
+    [transaction_detail_1, transaction_detail_2], ignore_index=True
+)
+print(len(transaction_detail_1))
+print(len(transaction_detail_2))
+print(len(transaction_detail))
+
+# %%
