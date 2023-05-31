@@ -1,5 +1,6 @@
 # %%
 import os
+import numpy as np
 import pandas as pd
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -44,5 +45,31 @@ pd.pivot_table(
     aggfunc="sum",
     fill_value=0,
 )
+
+# %%
+# 商品名の表記揺れを補正する
+# 1.商品名のユニーク数を確認する(実際は26種類)
+len(pd.unique(uriage_data["item_name"]))
+
+# %%
+# 2.データの揺れを解消する
+# 2-1.半角を全角に統一する
+uriage_data["item_name"] = uriage_data["item_name"].str.upper()
+
+# 2-2.スペース（全角、半角両方）を消す
+uriage_data["item_name"] = uriage_data["item_name"].str.replace("　", "")
+uriage_data["item_name"] = uriage_data["item_name"].str.replace(" ", "")
+
+# 2-3.商品名順にソートする
+uriage_data.sort_values("item_name", ascending=True)
+
+# %%
+# 3.補正結果の検証をする
+# 3-1.ユニークな商品名の確認
+np.sort(pd.unique(uriage_data["item_name"]))
+
+# %%
+# 3-2.ユニークな商品名の数の確認
+len(pd.unique(uriage_data["item_name"]))
 
 # %%
