@@ -122,3 +122,19 @@ for item_name in price_is_null_item_name_list:
     print(f"{item_name}の最大額:{item_price_max}、最小額:{item_price_min}")
 
 # %%
+# 顧客データの揺れを補正する
+kokyaku_data.head()
+
+# %%
+# 1.顧客名の揺れを補正する
+# 1-1.顧客名の顧客データと売上データ間の表記揺れの確認
+print(kokyaku_data["顧客名"].head())
+print(uriage_data["customer_name"].head())
+
+# %%
+# 1-2.空白を削除する
+kokyaku_data["顧客名"] = kokyaku_data["顧客名"].str.replace("　", "")
+kokyaku_data["顧客名"] = kokyaku_data["顧客名"].str.replace(" ", "")
+kokyaku_data["顧客名"].head()
+
+# %%
