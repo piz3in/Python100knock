@@ -73,3 +73,52 @@ np.sort(pd.unique(uriage_data["item_name"]))
 len(pd.unique(uriage_data["item_name"]))
 
 # %%
+# 金額の欠損値を補完する
+# 1.どのデータに欠損値があるかを確認する
+uriage_data.isnull().any()
+
+# %%
+# 2.欠損値を補完する
+# 2-1.item_priceが欠損している時に1となるフラグを立てる
+item_price_is_null = uriage_data["item_price"].isnull()
+item_price_is_null
+
+# %%
+# 2-2.item_priceに欠損がある商品名のリストを作成する
+price_is_null_item_name_list = list(
+    np.sort(uriage_data.loc[item_price_is_null, "item_name"].unique())
+)
+price_is_null_item_name_list
+
+# %%
+# 2-3.item_priceに欠損があるの商品の価格を欠損していない行から取得し欠損値を補完する
+for item_name in price_is_null_item_name_list:
+    # 対象となるitem_nameのitem_priceを欠損していない行から取得する
+    item_price = uriage_data.loc[
+        (~item_price_is_null) & (uriage_data["item_name"] == item_name), "item_price"
+    ].max()
+    # 対象となるitem_nameのitem_price列の全ての欠損値を取得したitem_priceで補完する
+    uriage_data.loc[
+        (item_price_is_null) & (uriage_data["item_name"] == item_name), "item_price"
+    ] = item_price
+uriage_data.head()
+
+# %%
+# 3.補完の検証を行う
+# 3-1.欠損値の有無を確認する
+uriage_data.isnull().any()
+
+# %%
+# 3-2.補完した金額の値が正しいかを確認する
+for item_name in price_is_null_item_name_list:
+    item_price_max = uriage_data.loc[
+        uriage_data["item_name"] == item_name, "item_price"
+    ].max()
+
+    item_price_min = uriage_data.loc[
+        uriage_data["item_name"] == item_name, "item_price"
+    ].min()
+
+    print(f"{item_name}の最大額:{item_price_max}、最小額:{item_price_min}")
+
+# %%
