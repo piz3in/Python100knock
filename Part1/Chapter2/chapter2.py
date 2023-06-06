@@ -226,3 +226,63 @@ if not os.path.exists("output"):
 dump_data.to_csv("output/dump_data.csv", index=False)
 
 # %%
+# データを集計する
+# 1.ダンプファイルの読み込み
+input_data = pd.read_csv("output/dump_data.csv")
+input_data.head()
+
+# %%
+# 2.月別に商品毎の販売数の集計を行う
+pd.pivot_table(
+    input_data,
+    index="purchase_month",
+    columns="item_name",
+    aggfunc="size",
+    fill_value=0,
+)
+
+# %%
+# 3.月別に商品毎の売上金額の集計を行う
+pd.pivot_table(
+    input_data,
+    index="purchase_month",
+    columns="item_name",
+    values="item_price",
+    aggfunc="sum",
+    fill_value=0,
+)
+
+# %%
+# 4.月別に顧客毎の購入金額の集計を行う
+pd.pivot_table(
+    input_data,
+    index="purchase_month",
+    columns="顧客名",
+    values="item_price",
+    aggfunc="sum",
+    fill_value=0,
+)
+
+# %%
+# 5.集計期間で購入していない顧客がいるかを確認する
+# 5-1.顧客データを主として横結合する
+join_customer_data = pd.merge(
+    uriage_data, kokyaku_data, how="right", left_on="customer_name", right_on="顧客名"
+)
+# 5-2.売上（購入）履歴がない（すなわち、purchase_dateのデータがない）顧客を選択する
+join_customer_data.loc[
+    join_customer_data["purchase_date"].isnull(), ["顧客名", "かな", "地域", "メールアドレス", "登録日"]
+]
+
+# %%
+# 6.月別に地域毎の購入金額の集計を行う
+pd.pivot_table(
+    input_data,
+    index="purchase_month",
+    columns="地域",
+    values="item_price",
+    aggfunc="sum",
+    fill_value=0,
+)
+
+# %%
