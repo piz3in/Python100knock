@@ -11,7 +11,8 @@ uriage_data.head()
 
 # %%
 kokyaku_data = pd.read_excel("input/kokyaku_daicho.xlsx")
-kokyaku_data.head()
+print(kokyaku_data.head())
+print(len(kokyaku_data))
 
 # %%
 # データの揺れがあるまま商品毎の月売上合計を集計する
@@ -136,5 +137,51 @@ print(uriage_data["customer_name"].head())
 kokyaku_data["顧客名"] = kokyaku_data["顧客名"].str.replace("　", "")
 kokyaku_data["顧客名"] = kokyaku_data["顧客名"].str.replace(" ", "")
 kokyaku_data["顧客名"].head()
+
+# %%
+# 2.日付の揺れを補正する
+kokyaku_data["登録日"].head()
+
+# %%
+# 2-1.数値として取り込まれている行を特定する
+register_date_is_digit = kokyaku_data["登録日"].astype("str").str.isdigit()
+# 該当する行数を確認する
+register_date_is_digit.sum()
+
+# %%
+# 2-2.数値として取り込まれている行をdatetime型に変換する
+correct_register_date_from_serial = pd.to_datetime("1900-01-01") + pd.to_timedelta(
+    kokyaku_data.loc[register_date_is_digit, "登録日"].astype("float"), unit="D"
+)
+correct_register_date_from_serial
+
+# %%
+# 2-3.文字列として取り込まれている行をdatetime型に変換する
+correct_register_date_from_string = pd.to_datetime(
+    kokyaku_data.loc[~register_date_is_digit, "登録日"]
+)
+correct_register_date_from_string
+
+# %%
+# 2-4.数値列から変換した行と文字列から変換した行を結合して顧客データの登録日データを更新する
+kokyaku_data["登録日"] = pd.concat(
+    [correct_register_date_from_serial, correct_register_date_from_string]
+)
+kokyaku_data["登録日"].head()
+
+# %%
+# 3.月毎の顧客登録数をカウントする
+# 3-1.登録日データから登録月データを作成する
+kokyaku_data["登録月"] = kokyaku_data["登録日"].dt.strftime("%Y-%m")
+
+# 3-2.月毎の登録顧客数をカウントする
+print(kokyaku_data[["登録月", "顧客名"]].groupby("登録月").count())
+
+# 3-3.顧客データ数に変化がないかを検証する
+print(len(kokyaku_data))
+
+# 3-4.登録日データに数値列が残っていないかを確認する
+register_date_is_digit = kokyaku_data["登録日"].astype("str").str.isdigit()
+register_date_is_digit.sum()
 
 # %%
