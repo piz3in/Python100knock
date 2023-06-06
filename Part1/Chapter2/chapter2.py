@@ -194,3 +194,35 @@ join_data = join_data.drop("customer_name", axis=1)
 join_data.head()
 
 # %%
+# クレンジングしたデータをダンプする
+join_data.columns
+
+# %%
+# 1.直感的に理解しやすい順に列を並べ替える
+dump_data = join_data[
+    [
+        "purchase_date",
+        "purchase_month",
+        "item_name",
+        "item_price",
+        "顧客名",
+        "かな",
+        "地域",
+        "メールアドレス",
+        "登録日",
+        "登録月",
+    ]
+]
+dump_data.head()
+
+# %%
+# 2.csvファイルとして出力する
+# 2-1.outputディレクトリの存在を確認し、存在しなければ作成する
+if not os.path.exists("output"):
+    # ディレクトリが存在しない場合、ディレクトリを作成する
+    os.makedirs("output")
+
+# 2-2.dump_dataをcsvファイルとして出力する
+dump_data.to_csv("output/dump_data.csv", index=False)
+
+# %%
