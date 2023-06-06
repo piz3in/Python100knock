@@ -185,3 +185,12 @@ register_date_is_digit = kokyaku_data["登録日"].astype("str").str.isdigit()
 register_date_is_digit.sum()
 
 # %%
+# 売上履歴に顧客データを結合する
+join_data = pd.merge(
+    uriage_data, kokyaku_data, how="left", left_on="customer_name", right_on="顧客名"
+)
+# 重複するデータ列(customer_nameと顧客名)の一方（customer_name）を削除する
+join_data = join_data.drop("customer_name", axis=1)
+join_data.head()
+
+# %%
