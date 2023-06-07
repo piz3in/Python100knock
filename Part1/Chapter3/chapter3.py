@@ -44,3 +44,34 @@ join_customer_data.head()
 join_customer_data.isnull().sum()
 
 # %%
+# 顧客データの基礎集計をする
+# 1.会員区分毎の顧客数を確認する
+join_customer_data.groupby("class_name")["customer_id"].count()
+
+# %%
+# 2.キャンペーン区分毎の顧客数を確認する
+join_customer_data.groupby("campaign_name")["customer_id"].count()
+
+# %%
+# 3.性別毎の顧客数を確認する
+join_customer_data.groupby("gender")["customer_id"].count()
+
+# %%
+# 4.退会済みの顧客数を確認する
+join_customer_data.groupby("is_deleted")["customer_id"].count()
+
+# %%
+# 5.2018年度に入会した顧客数を確認する
+# 5-1.start_dateをdatetime型に変換する
+join_customer_data["start_date"] = pd.to_datetime(join_customer_data["start_date"])
+join_customer_data.dtypes
+
+# %%
+# 5-2.2018年度に入会した顧客数をカウントする
+join_customer_data.loc[
+    ("2018-04-01" <= join_customer_data["start_date"])
+    & (join_customer_data["start_date"] <= "2019-03-31"),
+    "customer_id",
+].count()
+
+# %%
