@@ -25,3 +25,22 @@ print(len(campaign_master))
 campaign_master.head()
 
 # %%
+# 顧客データにクラスマスターデータとキャンペーンマスターデータを結合する
+# 1.クラスマスターデータを結合する
+join_customer_data = pd.merge(customer_master, class_master, how="left", on="class")
+print(len(join_customer_data))
+join_customer_data.head()
+
+# %%
+# 2.キャンペーンマスターデータを結合する
+join_customer_data = pd.merge(
+    join_customer_data, campaign_master, how="left", on="campaign_id"
+)
+print(len(join_customer_data))
+join_customer_data.head()
+
+# %%
+# 3.欠損値がないかを確認する
+join_customer_data.isnull().sum()
+
+# %%
