@@ -75,3 +75,36 @@ join_customer_data.loc[
 ].count()
 
 # %%
+# 最新月に在籍している顧客データの基礎集計をする
+# 1.最新月に月末まで在籍している（end_dateが2019-03-31以降またはend_dateのデータがない）顧客のデータを選択する
+# 1-1.end_dateをdatetime型に変換する
+join_customer_data["end_date"] = pd.to_datetime(join_customer_data["end_date"])
+join_customer_data.head()
+
+# %%
+# 1-2.最新月に在籍している顧客のデータを選択する
+customers_exist_latest_month = join_customer_data.loc[
+    (join_customer_data["end_date"] >= "2019-03-31")
+    | (join_customer_data["end_date"].isnull())
+]
+print(len(customers_exist_latest_month))
+customers_exist_latest_month
+
+# %%
+# 1-3.絞り込みの検証を行う（end_dateが2019-03-31とNaTのみかを確認する）
+customers_exist_latest_month["end_date"].unique()
+
+# %%
+# 2.基礎集計をする
+# 2-1.会員区分毎の顧客数を確認する
+customers_exist_latest_month.groupby("class_name")["customer_id"].count()
+
+# %%
+# 2-2.キャンペーン区分毎の顧客数を確認する
+customers_exist_latest_month.groupby("campaign_name")["customer_id"].count()
+
+# %%
+# 2-3.性別毎の顧客数を確認する
+customers_exist_latest_month.groupby("gender")["customer_id"].count()
+
+# %%
