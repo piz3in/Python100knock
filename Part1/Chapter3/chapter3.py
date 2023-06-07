@@ -108,3 +108,36 @@ customers_exist_latest_month.groupby("campaign_name")["customer_id"].count()
 customers_exist_latest_month.groupby("gender")["customer_id"].count()
 
 # %%
+# 顧客毎の月利用回数の集計データを作成する
+# 1.集計に必要なデータを作成する
+# 1-1.usedateをdatetime型に変換する
+use_log["usedate"] = pd.to_datetime(use_log["usedate"])
+
+# 1-2.use_month列を作成する
+use_log["use_month"] = use_log["usedate"].dt.strftime("%Y-%m")
+
+# 1-3.各顧客の月毎の利用回数を集計したデータフレームを作成する
+monthly_use_log = use_log.groupby(["use_month", "customer_id"], as_index=False).count()
+monthly_use_log
+
+# %%
+# 1-4.不要なusedate列を削除する（usedate列とlog_id列のカウント結果は等しいため）
+monthly_use_log.drop("usedate", axis=1, inplace=True)
+monthly_use_log
+
+# %%
+# 1-5.列名log_idをcountに変更する
+monthly_use_log.rename(columns={"log_id": "count"}, inplace=True)
+monthly_use_log
+
+# %%
+# 2.顧客毎の月利用回数の平均値、中央値、最大値、最小値を集計する
+customer_monthly_use_log = (
+    monthly_use_log[["customer_id", "count"]]
+    .groupby("customer_id")
+    .agg(["mean", "median", "max", "min"])
+)["count"]
+customer_monthly_use_log.reset_index(drop=False, inplace=True)
+customer_monthly_use_log
+
+# %%
