@@ -141,3 +141,26 @@ customer_monthly_use_log.reset_index(drop=False, inplace=True)
 customer_monthly_use_log
 
 # %%
+# 各顧客が定期的（今回は、毎週同じ曜日に利用していることと定義する）に利用しているかどうかのフラグを作成する
+# 1.顧客毎に月毎の曜日別の利用回数をカウントする
+# 1-1.曜日データを作成する
+use_log["weekday"] = use_log["usedate"].dt.weekday
+# 1-2.各月の各曜日の利用回数をカウントする
+weekday_use_log = use_log.groupby(
+    ["customer_id", "use_month", "weekday"], as_index=False
+).count()[["customer_id", "use_month", "weekday", "log_id"]]
+weekday_use_log.rename(columns={"log_id": "count"}, inplace=True)
+weekday_use_log.head()
+# %%
+# 2.定期利用フラグを作成する
+# 2-1.顧客毎に各月の同一曜日の利用回数の最大値を取得する
+weekday_use_log = weekday_use_log.groupby("customer_id", as_index=False).max("count")[
+    ["customer_id", "count"]
+]
+weekday_use_log.head()
+# %%
+# 2-2.最大値が4以上の時にフラグを立てる
+weekday_use_log["routine_flg"] = 0
+weekday_use_log.loc[weekday_use_log["count"] >= 4, "routine_flg"] = 1
+weekday_use_log.head()
+# %%
