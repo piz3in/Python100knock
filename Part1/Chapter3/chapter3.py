@@ -164,3 +164,21 @@ weekday_use_log["routine_flg"] = 0
 weekday_use_log.loc[weekday_use_log["count"] >= 4, "routine_flg"] = 1
 weekday_use_log.head()
 # %%
+# 顧客データと利用履歴データ(月利用回数の集計データと定期利用フラグ)を結合する
+# 1.顧客データと月利用回数の集計データを結合する
+join_customer_data = pd.merge(
+    join_customer_data, customer_monthly_use_log, how="left", on="customer_id"
+)
+# 2.顧客データと定期利用フラグを結合する
+join_customer_data = pd.merge(
+    join_customer_data,
+    weekday_use_log[["customer_id", "routine_flg"]],
+    how="left",
+    on="customer_id",
+)
+join_customer_data.head()
+# %%
+# 3.欠損値の確認をする
+join_customer_data.isnull().sum()
+
+# %%
