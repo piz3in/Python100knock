@@ -1,6 +1,7 @@
 # %%
 import os
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -181,4 +182,20 @@ join_customer_data.head()
 # 3.欠損値の確認をする
 join_customer_data.isnull().sum()
 
+# %%
+# 会員期間を計算する
+# 1.会員期間計算用の終了日データ列を作成する
+join_customer_data["calc_end_date"] = join_customer_data["end_date"]
+join_customer_data["calc_end_date"] = join_customer_data["calc_end_date"].fillna(
+    pd.to_datetime("20190430")
+)
+# 2.会員期間を月単位で算出する
+join_customer_data["membership_period"] = 0
+for i in range(len(join_customer_data)):
+    delta = relativedelta(
+        join_customer_data.loc[i, "calc_end_date"],
+        join_customer_data.loc[i, "start_date"],
+    )
+    join_customer_data.loc[i, "membership_period"] = delta.years * 12 + delta.months
+join_customer_data.head()
 # %%
