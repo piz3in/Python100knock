@@ -2,6 +2,7 @@
 import os
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+import matplotlib.pyplot as plt
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -198,4 +199,20 @@ for i in range(len(join_customer_data)):
     )
     join_customer_data.loc[i, "membership_period"] = delta.years * 12 + delta.months
 join_customer_data.head()
+# %%
+# 顧客行動の各種統計量を計算する
+# 1.顧客毎の月利用回数の平均値、中央値、最大値、最小値の統計量を計算する
+join_customer_data[["mean", "median", "max", "min"]].describe()
+
+# %%
+# 2.定期利用している(各月の同一曜日の利用回数の最大値が4以上)ユーザーとそうでないユーザーの数の確認
+join_customer_data.groupby("routine_flg").count()["customer_id"]
+
+# %%
+# 3.会員期間の分布を可視化する
+fig = plt.figure()
+ax = fig.add_subplot()
+
+ax.hist(join_customer_data["membership_period"])
+
 # %%
