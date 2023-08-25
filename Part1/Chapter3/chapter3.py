@@ -216,3 +216,34 @@ ax = fig.add_subplot()
 ax.hist(join_customer_data["membership_period"])
 
 # %%
+# 退会ユーザーと継続ユーザーの違いを把握する
+# 1.退会ユーザーの統計量の計算
+join_customer_data[join_customer_data["is_deleted"] == 1].describe()[
+    [
+        "is_deleted",
+        "price",
+        "mean",
+        "median",
+        "max",
+        "min",
+        "routine_flg",
+        "membership_period",
+    ]
+]
+
+# %%
+# 2.継続ユーザーの統計量の計算
+join_customer_data[join_customer_data["is_deleted"] == 0].describe()[
+    [
+        "is_deleted",
+        "price",
+        "mean",
+        "median",
+        "max",
+        "min",
+        "routine_flg",
+        "membership_period",
+    ]
+]
+
+# %%
