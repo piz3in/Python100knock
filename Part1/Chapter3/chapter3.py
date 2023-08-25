@@ -247,3 +247,13 @@ join_customer_data[join_customer_data["is_deleted"] == 0].describe()[
 ]
 
 # %%
+# 3.データダンプ
+# 3-1.outputディレクトリの存在を確認し、存在しなければ作成する
+if not os.path.exists("output"):
+    # ディレクトリが存在しない場合、ディレクトリを作成する
+    os.makedirs("output")
+
+# 3-2.join_customer_dataをcsvファイルとして出力する
+join_customer_data.to_csv("output/join_customer_data.csv", index=False)
+
+# %%
