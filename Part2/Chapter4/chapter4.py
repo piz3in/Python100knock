@@ -51,3 +51,15 @@ customer_clustering["cluster"].unique()
 customer_clustering.head()
 
 # %%
+# クラスタリング結果を分析する
+# 1.理解しやすいcolumn名に変更する
+customer_clustering.columns = ["月内平均値", "月内中央値", "月内最大値", "月内最小値", "会員期間", "cluster"]
+customer_clustering.head()
+
+# %%
+# 2.各クラスターに含まれる顧客の数をカウントする
+customer_clustering.groupby("cluster").count()
+
+# %%
+# 3.グループ毎の平均値を集計する
+customer_clustering.groupby("cluster").mean()
