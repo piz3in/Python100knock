@@ -1,8 +1,10 @@
 # %%
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -63,3 +65,20 @@ customer_clustering.groupby("cluster").count()
 # %%
 # 3.グループ毎の平均値を集計する
 customer_clustering.groupby("cluster").mean()
+
+# クラスタリング結果を可視化する
+# %%
+X = customer_clustering_sc
+# PCAオブジェクトを生成（ここでは次元削減を行うので、維持する主成分の数をパラメータとして指定）
+pca = PCA(n_components=2)
+
+# fitメソッドを呼び出し、主成分を見つける
+# transformメソッドで回転と次元削減を行う
+x_pca = pca.fit_transform(X)
+
+pca_df = pd.DataFrame(x_pca)
+pca_df["cluster"] = customer_clustering["cluster"]
+
+for i in customer_clustering["cluster"].unique():
+    tmp = pca_df.loc[pca_df["cluster"] == i]
+    plt.scatter(tmp[0], tmp[1])
