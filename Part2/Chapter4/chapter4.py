@@ -82,3 +82,25 @@ pca_df["cluster"] = customer_clustering["cluster"]
 for i in customer_clustering["cluster"].unique():
     tmp = pca_df.loc[pca_df["cluster"] == i]
     plt.scatter(tmp[0], tmp[1])
+
+# %%
+# 退会顧客の傾向を把握する
+# 1.クラスタリング結果に顧客行動データから退会情報を追加する
+customer_clustering = pd.concat(
+    [
+        customer_clustering,
+        customer.loc[:, ["customer_id", "is_deleted", "routine_flg"]],
+    ],
+    axis=1,
+)
+customer_clustering.head()
+
+# %%
+# 2.クラスター毎の退会顧客数をカウントする
+customer_clustering.groupby(["cluster", "is_deleted"]).count()["customer_id"]
+
+# %%
+# 3.クラスター毎の定期利用フラグをカウントする
+customer_clustering.groupby(["cluster", "routine_flg"]).count()["customer_id"]
+
+# %%
