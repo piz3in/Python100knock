@@ -2,6 +2,7 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from dateutil.relativedelta import relativedelta
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -156,4 +157,31 @@ predict_data.head()
 predict_data = predict_data.dropna(ignore_index=True)
 predict_data.head()
 
+# %%
+# 特徴となる変数(会員期間データ)を付与する
+# 1.predict_dataに顧客データ（customer）のstart_dateデータを結合する
+predict_data = pd.merge(
+    predict_data, customer[["customer_id", "start_date"]], how="left", on="customer_id"
+)
+predict_data.head()
+
+# %%
+# 2.予測月（pred_month）の初日時点での会員期間を計算する
+# 2-1.予測月の初日データ（now_date）列を作成する
+predict_data["now_date"] = pd.to_datetime(predict_data["pred_month"], format="%Y-%m")
+predict_data.head()
+# %%
+# 2-2.start_date列をdatetime型に変換する
+predict_data["start_date"] = pd.to_datetime(predict_data["start_date"])
+
+# 2-3.予測月までの会員期間（membership_period: now_dateとstart_dateの差分）を計算する
+predict_data["membership_period"] = None
+
+for i in range(len(predict_data)):
+    delta = relativedelta(
+        predict_data.loc[i, "now_date"], predict_data.loc[i, "start_date"]
+    )
+    predict_data.loc[i, "membership_period"] = delta.years * 12 + delta.months
+
+predict_data.head()
 # %%
