@@ -42,7 +42,7 @@ customer_clustering_sc = sc.fit_transform(customer_clustering)
 
 # 2-2.クラスタリングする
 # KMeansクラスのインスタンスを作成する。同時に、パラメータを指定する
-kmeans = KMeans(n_clusters=4, random_state=0)
+kmeans = KMeans(n_clusters=4, n_init="auto", random_state=0)
 
 # kmeansオブジェクトのfitメソッドを呼び出して訓練データからモデルを構築する
 clusters = kmeans.fit(customer_clustering_sc)
