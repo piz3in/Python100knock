@@ -6,6 +6,8 @@ from dateutil.relativedelta import relativedelta
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from sklearn import linear_model
+import sklearn.model_selection
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -184,4 +186,32 @@ for i in range(len(predict_data)):
     predict_data.loc[i, "membership_period"] = delta.years * 12 + delta.months
 
 predict_data.head()
+# %%
+# 来月の利用回数予測モデルを作成する
+# 1.2018年4月以降に入会した顧客データに絞る
+predict_data = predict_data[predict_data["start_date"] >= pd.to_datetime("20180401")]
+
+# 2.線形回帰モデルを作成する
+model = linear_model.LinearRegression()
+
+X = predict_data[
+    [
+        "count_0",
+        "count_1",
+        "count_2",
+        "count_3",
+        "count_4",
+        "count_5",
+        "membership_period",
+    ]
+]
+y = predict_data["count_pred"]
+
+X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y)
+model.fit(X_train, y_train)
+# %%
+# 3.精度を検証する
+print(model.score(X_train, y_train))
+print(model.score(X_test, y_test))
+
 # %%
