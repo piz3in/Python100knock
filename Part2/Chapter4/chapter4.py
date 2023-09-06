@@ -220,3 +220,11 @@ coef = pd.DataFrame({"feature_names": X.columns, "coefficient": model.coef_})
 coef
 
 # %%
+# 来月の利用回数を予測する
+x1 = [3, 4, 4, 6, 8, 7, 8]
+x2 = [2, 2, 3, 3, 4, 6, 8]
+X_pred = pd.DataFrame([x1, x2], columns=X.columns)
+
+model.predict(X_pred)
+# %%
+#
