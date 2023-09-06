@@ -227,4 +227,11 @@ X_pred = pd.DataFrame([x1, x2], columns=X.columns)
 
 model.predict(X_pred)
 # %%
-#
+# 顧客毎の月別の利用回数データをダンプする
+if not os.path.exists("output"):
+    # ディレクトリが存在しない場合、ディレクトリを作成する
+    os.makedirs("output")
+
+monthly_use_log.to_csv("output/use_log_months.csv", index=False)
+
+# %%
