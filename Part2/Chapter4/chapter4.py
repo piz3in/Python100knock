@@ -215,3 +215,8 @@ print(model.score(X_train, y_train))
 print(model.score(X_test, y_test))
 
 # %%
+# モデルに寄与している変数を確認する
+coef = pd.DataFrame({"feature_names": X.columns, "coefficient": model.coef_})
+coef
+
+# %%
