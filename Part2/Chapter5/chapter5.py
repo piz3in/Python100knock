@@ -90,3 +90,33 @@ print(len(exit_use_log["customer_id"].unique()))
 exit_use_log.head()
 
 # %%
+# 継続顧客のデータを作成する
+# 1.継続中の顧客のみの顧客行動データを作成
+continue_customer = customer[customer["is_deleted"] == 0].copy()
+
+# 2.全ての顧客（退会済みと継続中）の月別利用回数データと継続中の顧客行動データを結合
+continue_use_log = pd.merge(use_log, continue_customer, on="customer_id", how="left")
+print(len(continue_use_log))
+
+# 3.退会済みの顧客行動データを削除
+continue_use_log = continue_use_log.dropna(subset=["name"])
+print(len(continue_use_log))
+
+# %%
+# 退会顧客と継続顧客のデータ数を揃えるため、継続顧客データをアンダーサンプリングする
+# 1.データをシャッフルする
+continue_use_log = continue_use_log.sample(frac=1, ignore_index=True)
+
+# 2.customer_idが重複しているデータは最初のデータのみを残す
+continue_use_log.drop_duplicates(subset="customer_id", inplace=True)
+
+print(len(continue_use_log))
+continue_use_log.head()
+
+# %%
+# 継続顧客データと退会顧客データを結合する
+predict_data = pd.concat([continue_use_log, exit_use_log], ignore_index=True)
+print(len(predict_data))
+predict_data.head()
+
+# %%
