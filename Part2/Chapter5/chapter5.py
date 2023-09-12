@@ -120,3 +120,22 @@ print(len(predict_data))
 predict_data.head()
 
 # %%
+# 予測月の初日時点での会員期間を計算する
+# 1.予測月の初日データ(now_date)列を作成する
+predict_data["now_date"] = pd.to_datetime(predict_data["usemonth"], format="%Y-%m")
+
+# 2.start_date列をdatetime型に変換する
+predict_data["start_date"] = pd.to_datetime(predict_data["start_date"])
+
+# 3.予測月までの会員期間（membership_period: now_dateとstart_dateの差分）を計算する)
+predict_data["membership_period"] = None
+
+for i in range(len(predict_data)):
+    delta = relativedelta(
+        predict_data.loc[i, "now_date"], predict_data.loc[i, "start_date"]
+    )
+    predict_data.loc[i, "membership_period"] = int(delta.years * 12 + delta.months)
+
+predict_data.head()
+
+# %%
