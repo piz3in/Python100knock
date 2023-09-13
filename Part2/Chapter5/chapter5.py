@@ -139,3 +139,15 @@ for i in range(len(predict_data)):
 predict_data.head()
 
 # %%
+# 欠損値を除去する
+# 1.欠損値の数を確認する
+predict_data.isnull().sum()
+
+# %%
+# 2.count_1のデータが欠損している行を除外する
+predict_data.dropna(subset=["count_1"], inplace=True)
+
+# 3.除外できたことを確認する
+predict_data.isnull().sum()
+
+# %%
