@@ -128,7 +128,7 @@ predict_data["now_date"] = pd.to_datetime(predict_data["usemonth"], format="%Y-%
 predict_data["start_date"] = pd.to_datetime(predict_data["start_date"])
 
 # 3.予測月までの会員期間（membership_period: now_dateとstart_dateの差分）を計算する)
-predict_data["membership_period"] = None
+predict_data["membership_period"] = 0
 
 for i in range(len(predict_data)):
     delta = relativedelta(
@@ -149,5 +149,31 @@ predict_data.dropna(subset=["count_1"], inplace=True)
 
 # 3.除外できたことを確認する
 predict_data.isnull().sum()
+
+# %%
+# 文字列型の変数を処理できるように整形する
+# 1.予測に用いるデータ列のみ残す
+target_columns = [
+    "campaign_name",
+    "class_name",
+    "gender",
+    "count_1",
+    "routine_flg",
+    "membership_period",
+    "is_deleted",
+]
+predict_data = predict_data[target_columns]
+predict_data.head()
+
+# %%
+# 2.カテゴリー変数をダミー変数化する
+predict_data = pd.get_dummies(predict_data, dtype=int)
+predict_data.head()
+# %%
+# 3.不要なダミー変数を削除する
+predict_data.drop(
+    columns=["campaign_name_通常", "class_name_ナイト", "gender_M"], inplace=True
+)
+predict_data.head()
 
 # %%
