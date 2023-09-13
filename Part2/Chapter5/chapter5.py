@@ -2,6 +2,8 @@
 import os
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+from sklearn.tree import DecisionTreeClassifier
+import sklearn.model_selection
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -175,5 +177,35 @@ predict_data.drop(
     columns=["campaign_name_通常", "class_name_ナイト", "gender_M"], inplace=True
 )
 predict_data.head()
+
+# %%
+# 決定木を用いて退会予測モデルを作成する
+# 1.退会顧客と継続顧客が同数含まれるデータを作成する
+exit_predict_data = predict_data[predict_data["is_deleted"] == 1].copy()
+continue_predict_data = (
+    predict_data[predict_data["is_deleted"] == 0]
+    .copy()
+    .sample(n=len(exit_predict_data))
+)
+
+X = pd.concat([exit_predict_data, continue_predict_data], ignore_index=True)
+y = X["is_deleted"].copy()
+X.drop(columns=["is_deleted"], inplace=True)
+
+# 2.学習用データと評価用データに分割する
+X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y)
+
+# 3.モデルを作成する
+model = DecisionTreeClassifier(random_state=0)
+# 3-1.訓練データからモデルを構築する
+model.fit(X_train, y_train)
+# 3-2.与えられた入力に対する予測結果を返す
+y_test_pred = model.predict(X_test)
+print(y_test_pred)
+
+# %%
+# 4.予測結果と正解結果の比較を行う
+results_test = pd.DataFrame({"y_test": y_test, "y_pred": y_test_pred})
+results_test.head()
 
 # %%
