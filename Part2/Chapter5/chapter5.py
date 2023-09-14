@@ -209,3 +209,23 @@ results_test = pd.DataFrame({"y_test": y_test, "y_pred": y_test_pred})
 results_test.head()
 
 # %%
+# 予測モデルの評価
+correct = len(results_test[results_test["y_test"] == results_test["y_pred"]])
+data_count = len(results_test)
+score_test = correct / data_count
+print(score_test)
+
+# %%
+print(f"test score: {model.score(X_test, y_test)}")
+print(f"train score: {model.score(X_train, y_train)}")
+
+# %%
+# モデルパラメータの調整
+# max_depthを5にする
+model = DecisionTreeClassifier(random_state=0, max_depth=5)
+model.fit(X_train, y_train)
+
+print(f"test score: {model.score(X_test, y_test)}")
+print(f"train score: {model.score(X_train, y_train)}")
+
+# %%
