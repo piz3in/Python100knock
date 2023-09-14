@@ -229,3 +229,10 @@ print(f"test score: {model.score(X_test, y_test)}")
 print(f"train score: {model.score(X_train, y_train)}")
 
 # %%
+# モデルに寄与している変数の確認
+importance = pd.DataFrame(
+    {"feature_names": X.columns, "coeeficient": model.feature_importances_}
+)
+importance
+
+# %%
