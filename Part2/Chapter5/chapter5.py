@@ -2,8 +2,9 @@
 import os
 import pandas as pd
 from dateutil.relativedelta import relativedelta
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
 import sklearn.model_selection
+import graphviz
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -234,5 +235,18 @@ importance = pd.DataFrame(
     {"feature_names": X.columns, "coeeficient": model.feature_importances_}
 )
 importance
+
+# %%
+# 決定木の可視化
+# 1.DOTフォーマットで決定木を出力する
+dot = export_graphviz(model, out_file=None, feature_names=X.columns)
+# 2.DOTソースコードをgraphvizで画像生成できるよう処理する
+graph = graphviz.Source(dot)
+
+if not os.path.exists("output"):
+    # ディレクトリが存在しない場合、ディレクトリを作成する
+    os.makedirs("output")
+# 3.ソースコードをファイルに保存しgraphvizで画像生成する
+graph.view("output/image", cleanup=True)
 
 # %%
