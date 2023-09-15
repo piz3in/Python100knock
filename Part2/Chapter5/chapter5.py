@@ -250,3 +250,39 @@ if not os.path.exists("output"):
 graph.view("output/image", cleanup=True)
 
 # %%
+# 顧客の退会を予測する
+count_1 = 5
+routing_flg = 1
+membership_period = 10
+campaign_name = "通常"
+class_name = "ナイト"
+gender = "M"
+
+if campaign_name == "入会費半額":
+    campaign_name_list = [1, 0]
+elif campaign_name == "入会費無料":
+    campaign_name_list = [0, 1]
+elif campaign_name == "通常":
+    campaign_name_list = [0, 0]
+
+if class_name == "オールタイム":
+    class_name_list = [1, 0]
+elif class_name == "デイタイム":
+    class_name_list = [0, 1]
+elif class_name == "ナイト":
+    class_name_list = [0, 0]
+
+if gender == "F":
+    gender_list = [1]
+elif gender == "M":
+    gender_list = [0]
+
+input_data = [count_1, routing_flg, membership_period]
+input_data += campaign_name_list + class_name_list + gender_list
+input_data
+
+# %%
+X_pred = pd.DataFrame([input_data], columns=X.columns)
+print(model.predict(X_pred))
+print(model.predict_proba(X_pred))
+# %%
