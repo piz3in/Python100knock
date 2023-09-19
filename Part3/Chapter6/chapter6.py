@@ -76,12 +76,33 @@ join_data.head()
 # %%
 # 関東支社と東北支社のデータのみのデータフレームを作成する
 # %%
-# 1.関東支社データ
+# 1.関東支社（倉庫が関東にある）データ
 kanto = join_data[join_data["WHRegion"] == "関東"].copy()
 kanto.head()
 # %%
-# 2.東北支社データ
+# 2.東北支社(倉庫が東北にある)データ
 tohoku = join_data[join_data["WHRegion"] == "東北"].copy()
 tohoku.head()
+
+# %%
+# 現状の輸送量・コストの確認
+# 1.総コスト実績
+print(f'関東支社の総コスト:{kanto["Cost"].sum()}万円')
+print(f'東北支社の総コスト:{tohoku["Cost"].sum()}万円')
+# %%
+# 2.総部品輸送個数実績
+print(f'関東支社の総部品輸送個数:{kanto["Quantity"].sum()}個')
+print(f'東北支社の総部品輸送個数:{tohoku["Quantity"].sum()}個')
+
+# %%
+# 3.輸送部品１つあたりの輸送コスト実績
+print(f'関東支社の部品１つあたりの輸送コスト:{int(kanto["Cost"].sum()/kanto["Quantity"].sum()*10000)}円')
+print(f'東北支社の部品１つあたりの輸送コスト:{int(tohoku["Cost"].sum()/tohoku["Quantity"].sum()*10000)}円')
+
+# %%
+# 4.各支社の倉庫→工場間の平均輸送コスト
+cost_check = pd.merge(cost, factories, how="left", on="FCID")
+print(f'関東支社の平均輸送コスト:{cost_check.loc[cost_check["FCRegion"]=="関東","Cost"].mean()}万円')
+print(f'東北支社の平均輸送コスト:{cost_check.loc[cost_check["FCRegion"]=="東北","Cost"].mean()}万円')
 
 # %%
