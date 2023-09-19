@@ -23,3 +23,15 @@ pos["nodeC"] = (0, 1)
 
 # 描画
 nx.draw(G, pos)
+
+# %%
+# ネットワークにノードを追加する
+G.add_node("nodeD")
+
+G.add_edge("nodeA", "nodeD")
+
+pos["nodeD"] = (1, 0)
+
+nx.draw(G, pos, with_labels=True)
+
+# %%
