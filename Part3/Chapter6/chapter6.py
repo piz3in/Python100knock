@@ -106,3 +106,6 @@ print(f'関東支社の平均輸送コスト:{cost_check.loc[cost_check["FCRegio
 print(f'東北支社の平均輸送コスト:{cost_check.loc[cost_check["FCRegion"]=="東北","Cost"].mean()}万円')
 
 # %%
+# 各倉庫から工場への輸送ルートデータ読み込み
+trans_route = pd.read_csv("input/trans_route.csv", index_col="工場")
+trans_route.head()
