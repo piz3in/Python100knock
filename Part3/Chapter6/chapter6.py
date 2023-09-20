@@ -158,3 +158,27 @@ nx.draw(
     width=edge_weights,
 )
 # %%
+# 輸送コストを計算する関数を作成する
+# 各倉庫から工場への輸送コストデータ読み込み
+trans_cost = pd.read_csv("input/trans_cost.csv", index_col="工場")
+trans_cost.head()
+
+
+# %%
+# 輸送コストを計算する関数
+def calc_trans_cost(trans_route, trance_cost):
+    cost = 0
+    for i in range(len(trans_route.index)):
+        for j in range(len(trans_route.columns)):
+            warehouse = trans_route.index[i]
+            factory = trans_route.columns[j]
+            cost += (
+                trance_cost.loc[warehouse, factory]
+                * trans_route.loc[warehouse, factory]
+            )
+    return cost
+
+
+print(f"総輸送コスト:{calc_trans_cost(trans_route, trans_cost)}")
+
+# %%
