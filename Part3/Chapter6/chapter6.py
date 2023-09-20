@@ -1,6 +1,7 @@
 # %%
 import os
 import pandas as pd
+import networkx as nx
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -109,3 +110,51 @@ print(f'東北支社の平均輸送コスト:{cost_check.loc[cost_check["FCRegio
 # 各倉庫から工場への輸送ルートデータ読み込み
 trans_route = pd.read_csv("input/trans_route.csv", index_col="工場")
 trans_route.head()
+# %%
+# 各輸送ルートの輸送量データを可視化する
+# ノード座標の読み込み
+trans_route_pos = pd.read_csv("input/trans_route_pos.csv")
+trans_route_pos.head()
+
+# %%
+# グラフオブジェクトの作成
+G = nx.Graph()
+
+# ノード（頂点）の設定
+for i in range(len(trans_route_pos.columns)):
+    G.add_node(trans_route_pos.columns[i])
+
+# エッジ（辺）の設定とエッジの重みのリスト化
+edge_weights = []
+size = 0.1
+
+for i in range(len(trans_route.index)):
+    warehouse = trans_route.index[i]
+
+    for j in range(len(trans_route.columns)):
+        # エッジの設定
+        factory = trans_route.columns[j]
+        G.add_edge(factory, warehouse)
+
+        # エッジの重みのリスト化
+        weight = trans_route.loc[warehouse, factory] * size
+        edge_weights.append(weight)
+
+# 座標の設定
+pos = {}
+for i in range(len(trans_route_pos.columns)):
+    node = trans_route_pos.columns[i]
+    pos[node] = (trans_route_pos.loc[0, node], trans_route_pos.loc[1, node])
+
+# 描画
+nx.draw(
+    G,
+    pos,
+    with_labels=True,
+    font_size=16,
+    node_size=1000,
+    node_color="k",
+    font_color="w",
+    width=edge_weights,
+)
+# %%
