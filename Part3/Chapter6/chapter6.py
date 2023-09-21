@@ -182,3 +182,41 @@ def calc_trans_cost(trans_route, trance_cost):
 print(f"総輸送コスト:{calc_trans_cost(trans_route, trans_cost)}")
 
 # %%
+# 制約条件を作る
+# 1.データの読み込み
+# 1-1.各工場の最小生産数
+factory_min_demand = pd.read_csv("input/demand.csv")
+factory_min_demand
+
+# %%
+# 1-2.各倉庫が供給可能な最大部品数
+warehouse_max_supply = pd.read_csv("input/supply.csv")
+warehouse_max_supply
+
+# %%
+# 2.工場側の制約条件(最小生産数を達成する)の作成
+for i in range(len(factory_min_demand.columns)):
+    factory = factory_min_demand.columns[i]
+    min_demand = factory_min_demand.loc[0, factory]
+    temp_sum = sum(trans_route.loc[:, factory])
+    print(f"{factory}への輸送量:{temp_sum}, 最低生産数:{min_demand}")
+
+    if temp_sum >= min_demand:
+        print("最低生産数を満たしています。")
+    else:
+        print("最低生産数を満たしていません。輸送ルートの再計算が必要です。")
+
+
+# %%
+# 3.倉庫側の制約条件（供給可能部品数以下に抑える）の作成
+for i in range(len(warehouse_max_supply.columns)):
+    warehouse = warehouse_max_supply.columns[i]
+    max_supply = warehouse_max_supply.loc[0, warehouse]
+    temp_sum = sum(trans_route.loc[warehouse, :])
+    print(f"{warehouse}の供給量:{temp_sum}, 上限供給可能部品数:{max_supply}")
+
+    if temp_sum <= max_supply:
+        print("上限供給可能部品数以下です。")
+    else:
+        print("上限供給可能部品数を超えています。輸送ルートの再計算が必要です。")
+# %%
