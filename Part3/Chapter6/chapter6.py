@@ -2,6 +2,7 @@
 import os
 import pandas as pd
 import networkx as nx
+import numpy as np
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -219,4 +220,57 @@ for i in range(len(warehouse_max_supply.columns)):
         print("上限供給可能部品数以下です。")
     else:
         print("上限供給可能部品数を超えています。輸送ルートの再計算が必要です。")
+# %%
+# 輸送ルートを変更して総輸送コストの変化を確認する
+# 変更後ルートデータの読み込み
+new_trans_route = pd.read_csv("input/trans_route_new.csv", index_col="工場")
+new_trans_route
+
+# %%
+# 変更後ルートの総輸送コスト計算
+print(f"総輸送コスト（変更後）:{calc_trans_cost(new_trans_route, trans_cost)}")
+
+
+# %%
+# 制約条件を満たしているかの確認
+# 1.制約条件を確認する関数の作成
+# 1-1.各工場の最小生産数を達成できるかを確認する関数の作成
+def factory_min_demand_condition(trans_route, factory_min_demand):
+    flag = np.zeros(len(factory_min_demand.columns))
+
+    for i in range(len(factory_min_demand.columns)):
+        factory = factory_min_demand.columns[i]
+        min_demand = factory_min_demand.loc[0, factory]
+        temp_sum = sum(trans_route.loc[:, factory])
+
+        # 工場の最小生産数を達成できていればフラグを立てる
+        if temp_sum >= min_demand:
+            flag[i] = 1
+    return flag
+
+
+# 1-2.各倉庫の供給可能部品数以下に抑えられているかを確認する関数の作成
+def warehouse_max_supply_condition(trans_route, warehouse_max_supply):
+    flag = np.zeros(len(warehouse_max_supply.columns))
+
+    for i in range(len(warehouse_max_supply.columns)):
+        warehouse = warehouse_max_supply.columns[i]
+        max_supply = warehouse_max_supply.loc[0, warehouse]
+        temp_sum = sum(trans_route.loc[warehouse, :])
+
+        # 倉庫の供給可能部品数以下に抑えられていればフラグを立てる
+        if temp_sum <= max_supply:
+            flag[i] = 1
+    return flag
+
+
+# %%
+# 2.制約条件を満たしているかを確認する
+print(
+    f"各工場の最小生産数の達成確認結果(達成:1, 未達成:0): {factory_min_demand_condition(new_trans_route,factory_min_demand)}"
+)
+print(
+    f"各倉庫の供給可能部品数以下の達成確認結果(達成:1, 未達成:0): {warehouse_max_supply_condition(new_trans_route,warehouse_max_supply)}"
+)
+
 # %%
