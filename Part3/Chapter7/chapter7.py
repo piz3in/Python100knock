@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from itertools import product
 from pulp import LpProblem, LpVariable, lpSum, value, const
+import networkx as nx
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -79,4 +80,50 @@ for k, x in v1.items():
 
 print(trans_route_solved)
 print(f"最適化ルートの総輸送コスト:{total_cost}")
+# %%
+# ノード座標の読み込み
+trans_route_pos = pd.read_csv("input/trans_route_pos.csv")
+trans_route_pos.head()
+# %%
+# グラフオブジェクトの作成
+G = nx.Graph()
+
+# ノードの設定
+for i in range(len(trans_route_pos.columns)):
+    G.add_node(trans_route_pos.columns[i])
+
+# エッジの設定とエッジの重みのリスト化
+edge_weights = []
+size = 0.1
+
+for i in range(len(trans_route_solved.index)):
+    warehouse = trans_route_solved.index[i]
+
+    for j in range(len(trans_route_solved.columns)):
+        factory = trans_route_solved.columns[j]
+        # エッジの追加
+        G.add_edge(factory, warehouse)
+
+        # エッジの重みのリスト化
+        weight = trans_route_solved.loc[warehouse, factory] * size
+        edge_weights.append(weight)
+
+# ノードの座標の設定
+pos = {}
+for i in range(len(trans_route_pos.columns)):
+    node = trans_route_pos.columns[i]
+    pos[node] = (trans_route_pos.loc[0, node], trans_route_pos.loc[1, node])
+
+# 描画
+nx.draw(
+    G,
+    pos,
+    with_labels=True,
+    font_size=16,
+    node_size=1000,
+    node_color="k",
+    font_color="w",
+    width=edge_weights,
+)
+
 # %%
