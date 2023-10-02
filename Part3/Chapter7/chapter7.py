@@ -168,3 +168,23 @@ print(
 print(
     f"各倉庫の供給可能部品数以下の達成確認結果(達成:1, 未達成:0): {max_warehouse_supply_condition(trans_route_solved,max_warehouse_supply)}"
 )
+# %%
+# 生産計画に関するデータを読み込む
+# 1.製品の製造に必要な原料の割合
+material = pd.read_csv("input/product_plan_material.csv", index_col="製品")
+material
+
+# %%
+# 2.製品の利益
+profit = pd.read_csv("input/product_plan_profit.csv", index_col="製品")
+profit
+# %%
+# 3.原料の在庫
+stock = pd.read_csv("input/product_plan_stock.csv", index_col="項目")
+stock
+# %%
+# 4.製品の生産量
+product_plan = pd.read_csv("input/product_plan.csv", index_col="製品")
+product_plan
+
+# %%
