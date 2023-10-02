@@ -126,4 +126,45 @@ nx.draw(
     width=edge_weights,
 )
 
+
 # %%
+# 制約条件を満たしているかを確認する
+# 1.制約条件を確認する関数の作成
+# 1-1.各工場の最小生産数を達成できるかを確認する関数の作成
+def min_factory_demand_condition(trans_route, min_factory_demand):
+    flag = np.zeros(len(min_factory_demand.columns))
+
+    for i in range(len(min_factory_demand.columns)):
+        factory = min_factory_demand.columns[i]
+        min_demand = min_factory_demand.loc[0, factory]
+        temp_sum = sum(trans_route.loc[:, factory])
+
+        # 工場の最小生産数を達成できていればフラグを立てる
+        if temp_sum >= min_demand:
+            flag[i] = 1
+    return flag
+
+
+# 1-2.各倉庫の供給可能部品数以下に抑えられているかを確認する関数の作成
+def max_warehouse_supply_condition(trans_route, max_warehouse_supply):
+    flag = np.zeros(len(max_warehouse_supply.columns))
+
+    for i in range(len(max_warehouse_supply.columns)):
+        warehouse = max_warehouse_supply.columns[i]
+        max_supply = max_warehouse_supply.loc[0, warehouse]
+        temp_sum = sum(trans_route.loc[warehouse, :])
+
+        # 倉庫の供給可能部品数以下に抑えられていればフラグを立てる
+        if temp_sum <= max_supply:
+            flag[i] = 1
+    return flag
+
+
+# %%
+# 2.制約条件を満たしているかを確認する
+print(
+    f"各工場の最小生産数の達成確認結果(達成:1, 未達成:0): {min_factory_demand_condition(trans_route_solved,min_factory_demand)}"
+)
+print(
+    f"各倉庫の供給可能部品数以下の達成確認結果(達成:1, 未達成:0): {max_warehouse_supply_condition(trans_route_solved,max_warehouse_supply)}"
+)
