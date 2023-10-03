@@ -202,3 +202,39 @@ def calc_profit(profit, product_plan):
 print(f"総利益:{calc_profit(profit, product_plan)}")
 
 # %%
+# 生産最適化問題を解く
+# %%
+# LP problemクラスのオブジェクトを作成（最大化問題として定義する）
+prob = LpProblem(sense=const.LpMaximize)
+
+# 変数（各製品の生産量）を製品名をキーとしたディクショナリ型で定義
+products = product_plan.index
+n_product = len(products)
+v1 = {
+    (i): LpVariable(f"v{i}", lowBound=0, cat=const.LpInteger) for i in range(n_product)
+}
+
+# 目的関数（総利益）の定義
+prob += lpSum(profit.iloc[i, 0] * v1[i] for i in range(n_product))
+
+# 制約条件（原料の利用量を在庫以下にする）を追加
+n_material = len(material.columns)
+for j in range(n_material):
+    prob += (
+        lpSum(material.iloc[i, j] * v1[i] for i in range(n_product)) <= stock.iloc[0, j]
+    )
+
+# 最大化問題を解く
+prob.solve()
+
+# %%
+# 最適解（各製品の生産量）生産時の総利益を計算
+product_plan_solved = product_plan.copy()
+
+for k, x in v1.items():
+    i = k
+    product_plan_solved.iloc[i, 0] = value(x)
+
+print(product_plan_solved)
+print(f"最適生産時の総利益:{value(prob.objective)}")
+# %%
