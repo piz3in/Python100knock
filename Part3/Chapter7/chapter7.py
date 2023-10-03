@@ -170,6 +170,7 @@ print(
 )
 # %%
 # 生産計画に関するデータを読み込む
+# %%
 # 1.製品の製造に必要な原料の割合
 material = pd.read_csv("input/product_plan_material.csv", index_col="製品")
 material
@@ -186,5 +187,18 @@ stock
 # 4.製品の生産量
 product_plan = pd.read_csv("input/product_plan.csv", index_col="製品")
 product_plan
+
+
+# %%
+# 利益を計算する関数を作成する
+def calc_profit(profit, product_plan):
+    total_profit = 0
+    n_product = len(product_plan)
+    for i in range(n_product):
+        total_profit += profit.iloc[i, 0] * product_plan.iloc[i, 0]
+    return total_profit
+
+
+print(f"総利益:{calc_profit(profit, product_plan)}")
 
 # %%
