@@ -193,8 +193,7 @@ product_plan
 # 利益を計算する関数を作成する
 def calc_profit(profit, product_plan):
     total_profit = 0
-    n_product = len(product_plan)
-    for i in range(n_product):
+    for i in range(len(product_plan.index)):
         total_profit += profit.iloc[i, 0] * product_plan.iloc[i, 0]
     return total_profit
 
@@ -208,20 +207,19 @@ print(f"総利益:{calc_profit(profit, product_plan)}")
 prob = LpProblem(sense=const.LpMaximize)
 
 # 変数（各製品の生産量）を製品名をキーとしたディクショナリ型で定義
-products = product_plan.index
-n_product = len(products)
 v1 = {
-    (i): LpVariable(f"v{i}", lowBound=0, cat=const.LpInteger) for i in range(n_product)
+    (i): LpVariable(f"v{i}", lowBound=0, cat=const.LpInteger)
+    for i in range(len(product_plan.index))
 }
 
 # 目的関数（総利益）の定義
-prob += lpSum(profit.iloc[i, 0] * v1[i] for i in range(n_product))
+prob += lpSum(profit.iloc[i, 0] * v1[i] for i in range(len(product_plan.index)))
 
 # 制約条件（原料の利用量を在庫以下にする）を追加
-n_material = len(material.columns)
-for j in range(n_material):
+for j in range(len(material.columns)):
     prob += (
-        lpSum(material.iloc[i, j] * v1[i] for i in range(n_product)) <= stock.iloc[0, j]
+        lpSum(material.iloc[i, j] * v1[i] for i in range(len(product_plan.index)))
+        <= stock.iloc[0, j]
     )
 
 # 最大化問題を解く
@@ -242,10 +240,10 @@ print(f"最適生産時の総利益:{value(prob.objective)}")
 # %%
 # 制約条件を満たしているか（各原料の使用量）を確認する
 def stock_condition_check(product_plan, material, stock):
-    flag = np.zeros(n_material)
-    for i in range(n_material):
+    flag = np.zeros(len(material.columns))
+    for i in range(len(material.columns)):
         temp_sum = 0
-        for j in range(n_product):
+        for j in range(len(product_plan.index)):
             temp_sum = temp_sum + material.iloc[j, i] * product_plan.iloc[j, 0]
         if temp_sum <= stock.iloc[0, i]:
             flag[i] = 1
