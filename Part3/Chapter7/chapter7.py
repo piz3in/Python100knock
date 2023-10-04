@@ -27,10 +27,12 @@ max_warehouse_supply
 # %%
 # 2.初期設定
 np.random.seed(1)
-factories = min_factory_demand.columns
-warehouses = max_warehouse_supply.columns
 # 各倉庫と各工場のデカルト積（itertools.product型）のリストを作成
-pr = list(product(range(len(warehouses)), range(len(factories))))
+pr = list(
+    product(
+        range(len(max_warehouse_supply.columns)), range(len(min_factory_demand.columns))
+    )
+)
 pr
 # %%
 
@@ -46,16 +48,17 @@ v1 = {(i, j): LpVariable(f"v{i}_{j}", lowBound=0, cat=const.LpInteger) for i, j 
 prob += lpSum(trans_cost.iloc[i, j] * v1[i, j] for i, j in pr)
 
 # 「制約条件1：各倉庫の部品供給数が最大部品供給数を超えない」を追加
-for i in range(len(warehouses)):
+for i in range(len(max_warehouse_supply.columns)):
     prob += (
-        lpSum(v1[i, j] for j in range(len(factories)))
+        lpSum(v1[i, j] for j in range(len(min_factory_demand.columns)))
         <= max_warehouse_supply.iloc[0, i]
     )
 
 # 「制約条件2:各工場が最低生産数以上を生産」を追加
-for j in range(len(factories)):
+for j in range(len(min_factory_demand.columns)):
     prob += (
-        lpSum(v1[i, j] for i in range(len(warehouses))) >= min_factory_demand.iloc[0, j]
+        lpSum(v1[i, j] for i in range(len(max_warehouse_supply.columns)))
+        >= min_factory_demand.iloc[0, j]
     )
 
 # 最小化問題を解く
@@ -64,8 +67,12 @@ prob.solve()
 # %%
 # 4.総輸送コスト計算
 # 各ルートの輸送量の最適解を代入するデータフレームを作成
-data = np.zeros((len(warehouses), len(factories)), dtype=int)
-trans_route_solved = pd.DataFrame(data, columns=factories, index=warehouses)
+data = np.zeros(
+    (len(max_warehouse_supply.columns), len(min_factory_demand.columns)), dtype=int
+)
+trans_route_solved = pd.DataFrame(
+    data, columns=min_factory_demand.columns, index=max_warehouse_supply.columns
+)
 
 # 総輸送量コストの変数を定義（初期値0）
 total_cost = 0
@@ -97,15 +104,17 @@ edge_weights = []
 size = 0.1
 
 for i in range(len(trans_route_solved.index)):
-    warehouse = trans_route_solved.index[i]
-
     for j in range(len(trans_route_solved.columns)):
-        factory = trans_route_solved.columns[j]
         # エッジの追加
-        G.add_edge(factory, warehouse)
+        G.add_edge(trans_route_solved.columns[j], trans_route_solved.index[i])
 
         # エッジの重みのリスト化
-        weight = trans_route_solved.loc[warehouse, factory] * size
+        weight = (
+            trans_route_solved.loc[
+                trans_route_solved.index[i], trans_route_solved.columns[j]
+            ]
+            * size
+        )
         edge_weights.append(weight)
 
 # ノードの座標の設定
@@ -135,9 +144,8 @@ def min_factory_demand_condition(trans_route, min_factory_demand):
     flag = np.zeros(len(min_factory_demand.columns))
 
     for i in range(len(min_factory_demand.columns)):
-        factory = min_factory_demand.columns[i]
-        min_demand = min_factory_demand.loc[0, factory]
-        temp_sum = sum(trans_route.loc[:, factory])
+        min_demand = min_factory_demand.loc[0, min_factory_demand.columns[i]]
+        temp_sum = sum(trans_route.loc[:, min_factory_demand.columns[i]])
 
         # 工場の最小生産数を達成できていればフラグを立てる
         if temp_sum >= min_demand:
@@ -150,9 +158,8 @@ def max_warehouse_supply_condition(trans_route, max_warehouse_supply):
     flag = np.zeros(len(max_warehouse_supply.columns))
 
     for i in range(len(max_warehouse_supply.columns)):
-        warehouse = max_warehouse_supply.columns[i]
-        max_supply = max_warehouse_supply.loc[0, warehouse]
-        temp_sum = sum(trans_route.loc[warehouse, :])
+        max_supply = max_warehouse_supply.loc[0, max_warehouse_supply.columns[i]]
+        temp_sum = sum(trans_route.loc[max_warehouse_supply.columns[i], :])
 
         # 倉庫の供給可能部品数以下に抑えられていればフラグを立てる
         if temp_sum <= max_supply:
