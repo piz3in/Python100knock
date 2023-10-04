@@ -237,4 +237,22 @@ for k, x in v1.items():
 
 print(product_plan_solved)
 print(f"最適生産時の総利益:{value(prob.objective)}")
+
+
+# %%
+# 制約条件を満たしているか（各原料の使用量）を確認する
+def stock_condition_check(product_plan, material, stock):
+    flag = np.zeros(n_material)
+    for i in range(n_material):
+        temp_sum = 0
+        for j in range(n_product):
+            temp_sum = temp_sum + material.iloc[j, i] * product_plan.iloc[j, 0]
+        if temp_sum <= stock.iloc[0, i]:
+            flag[i] = 1
+        print(f"{material.columns[i]} 使用量:{temp_sum}, 在庫:{stock.iloc[0,i]}")
+    return flag
+
+
+print(f"制約条件計算結果:{stock_condition_check(product_plan_solved, material, stock)}")
+
 # %%
