@@ -3,7 +3,7 @@ import numpy as np
 import os
 import pandas as pd
 from itertools import product
-from pulp import LpProblem, LpVariable, lpSum, value, const
+from pulp import LpProblem, LpVariable, lpSum, lpDot, value, const
 import networkx as nx
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -260,4 +260,146 @@ def stock_condition_check(product_plan, material, stock):
 
 print(f"制約条件計算結果:{stock_condition_check(product_plan_solved, material, stock)}")
 
+# %%
+# ロジスティックネットワーク設計問題を解く（輸送ルートと生産計画の最適化を同時に考える）
+# 前提：商品の需要は一定
+# 「輸送コストと製造コストの和の最小化問題」を解く
+# 制約条件：各店舗への製品の輸送量が需要を上回る
+# %%
+# 1.データ作成
+products = list("AB")
+shops = list("PQ")
+factories = list("XY")
+lanes = (2, 2)
+# %%
+# 1-1.輸送費テーブル(tb_trans_cost)
+tb_trans_cost = pd.DataFrame(
+    ((j, k) for j in shops for k in factories), columns=["商店", "工場"]
+)
+tb_trans_cost["輸送費"] = [1, 2, 3, 1]
+tb_trans_cost
+# %%
+# 1-2.需要テーブル(tb_shop_demand)
+tb_shop_demand = pd.DataFrame(
+    ((j, i) for j in shops for i in products), columns=["商店", "製品"]
+)
+tb_shop_demand["需要"] = [10, 10, 20, 20]
+tb_shop_demand
+
+# %%
+# 1-3.生産テーブル(tb_factory_production)
+# c.f.工場Yのレーン0では製品Aしか作れず、かつその生産量の上限（10）がある
+tb_factory_production = pd.DataFrame(
+    ((k, l, i) for k, nl in zip(factories, lanes) for l in range(nl) for i in products),
+    columns=["工場", "レーン", "製品"],
+)
+tb_factory_production["下限"] = 0
+tb_factory_production["上限"] = np.inf
+tb_factory_production["生産費"] = [1, np.nan, np.nan, 1, 3, np.nan, 5, 3]
+tb_factory_production.dropna(ignore_index=True, inplace=True)
+tb_factory_production.loc[2, "上限"] = 10
+tb_factory_production
+
+# %%
+# 2.数理モデル作成
+# %%
+# 2-1.Lp problemクラスのオブジェクトを作成（生産費と輸送費の和の最小化問題）
+prob = LpProblem("logistic_network", sense=const.LpMinimize)
+
+# 2-2.変数（生産量と輸送量）の定義
+# %%
+# 2-2-1.各工場の各レーンでの各製品の生産量の変数を定義する
+# 生産テーブルに対応させる
+v_production = tb_factory_production[["工場", "レーン", "製品"]].copy()
+for n in range(len(v_production)):
+    factory = v_production.loc[n, "工場"]
+    lane = v_production.loc[n, "レーン"]
+    product = v_production.loc[n, "製品"]
+    # 各レーンでの生産量の上限がある場合は上限値を設定する（制約条件）
+    max_production = tb_factory_production.loc[n, "上限"]
+    if max_production == np.inf:
+        max_production = None
+    v_production.loc[n, "生産量"] = LpVariable(
+        f"v_production{factory}_{lane}_{product}",
+        lowBound=0,
+        upBound=max_production,
+        cat=const.LpInteger,
+    )
+v_production
+# %%
+# 2-2-2.各工場から各商店への各製品の輸送量の変数を定義する
+# columns=["工場","商店","製品","輸送量"]
+# 工場、商店、製品の全ての組み合わせのテーブルを作成
+data = [[f, s, p] for f in factories for s in shops for p in products]
+v_transportation = pd.DataFrame(data, columns=["工場", "商店", "製品"])
+# 輸送量列に変数を定義
+for n in range(len(v_transportation)):
+    factory = v_transportation.loc[n, "工場"]
+    shop = v_transportation.loc[n, "商店"]
+    product = v_transportation.loc[n, "製品"]
+    v_transportation.loc[n, "輸送量"] = LpVariable(
+        f"v_transportation{factory}_{shop}_{product}", lowBound=0, cat=const.LpInteger
+    )
+v_transportation
+# %%
+# 3.目的関数（生産コストと輸送コストの総和）を定義
+# %%
+prob += lpDot(tb_factory_production["生産費"], v_production["生産量"]) + lpSum(
+    tb_trans_cost.loc[
+        (tb_trans_cost["商店"] == shop) & (tb_trans_cost["工場"] == factory), "輸送費"
+    ]
+    * v_transportation.loc[
+        (v_transportation["工場"] == factory) & (v_transportation["商店"] == shop),
+        "輸送量",
+    ].sum()
+    for shop in shops
+    for factory in factories
+)
+# %%
+# 4.制約条件を設定する
+# 4-1.各工場での各製品の生産量が各工場からの各製品の輸送量以上になる
+# 各工場からの各製品の輸送量（出荷量）の集計
+n_factory_shipment = v_transportation.groupby(["工場", "製品"])["輸送量"].sum()
+n_factory_shipment
+# %%
+# 各工場での各製品の生産量の集計
+n_factory_produce = v_production.groupby(["工場", "製品"])["生産量"].sum()
+n_factory_produce
+# %%
+# 制約条件の作成
+# 制約条件作成のためのデータフレーム作成（上で集計した結果のデータフレームを結合）
+const_factory = pd.concat([n_factory_shipment, n_factory_produce], axis=1)
+const_factory
+# %%
+# 各行(axis=1)に対して輸送量が生産量以下になる制約条件を作成
+const_factory.apply(lambda r: prob.addConstraint(r["輸送量"] <= r["生産量"]), axis=1)
+
+# %%
+# 4-2.各商店への各製品の輸送量（入荷量）が各商店での各製品の需要量以上になる
+# 各商店での各製品の輸送量（入荷量）の集計
+n_shop_payload = v_transportation.groupby(["商店", "製品"])["輸送量"].sum()
+n_shop_payload
+# %%
+# 制約条件の作成
+# 制約条件作成のためのデータフレーム作成（各商店での各製品の輸送量の集計結果と需要テーブルを結合）
+const_shop = pd.merge(n_shop_payload, tb_shop_demand, on=["商店", "製品"])
+const_shop
+# %%
+# 各行に対して輸送量が需要以上になる制約条件を作成
+const_shop.apply(lambda r: prob.addConstraint(r["需要"] <= r["輸送量"]), axis=1)
+# %%
+# 最小化問題を解く
+prob.solve()
+
+# %%
+# 最適化問題を解いたあと、生産量、輸送量の列に算出結した変数の値（最適解）を代入する
+if prob.status == 1:
+    v_production["生産量"] = v_production["生産量"].apply(value)
+    v_transportation["輸送量"] = v_transportation["輸送量"].apply(value)
+# %%
+# 生産量の算出結果の確認
+v_production
+# %%
+# 輸送量の算出結果の確認
+v_transportation
 # %%
