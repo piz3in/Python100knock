@@ -418,3 +418,7 @@ total_transport_cost = (tb_calc_trans_cost["輸送費"] * tb_calc_trans_cost["�
 print(f"総輸送コスト:{total_transport_cost}")
 # %%
 # 2.最適ネットワークにおける生産コストを計算する
+total_produce_cost = (tb_factory_production["生産費"] * v_production["生産量"]).sum()
+
+print(f"総生産コスト:{total_produce_cost}")
+# %%
