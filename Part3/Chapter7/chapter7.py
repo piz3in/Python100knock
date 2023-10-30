@@ -402,4 +402,19 @@ v_production
 # %%
 # 輸送量の算出結果の確認
 v_transportation
+
+
 # %%
+# 計算結果が妥当かどうかを確認する
+# %%
+# 1.最適ネットワークにおける輸送コストを計算する
+# %%
+tb_calc_trans_cost = pd.merge(
+    v_transportation, tb_trans_cost, how="left", on=["工場", "商店"]
+)
+
+total_transport_cost = (tb_calc_trans_cost["輸送費"] * tb_calc_trans_cost["輸送量"]).sum()
+
+print(f"総輸送コスト:{total_transport_cost}")
+# %%
+# 2.最適ネットワークにおける生産コストを計算する
