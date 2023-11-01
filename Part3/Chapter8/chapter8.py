@@ -2,6 +2,7 @@
 import os
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import networkx as nx
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -125,4 +126,9 @@ nx.draw_networkx(G, font_color="w", node_color=active_node_coloring(list_timeser
 # 試行回数100のときのアクティブユーザー可視化
 t = 100
 nx.draw_networkx(G, font_color="w", node_color=active_node_coloring(list_timeseries[t]))
+# %%
+# 口コミの時系列変化のグラフを作成する
+list_timeseries_active_num = [sum(lst) for lst in list_timeseries]
+
+plt.plot(list_timeseries_active_num)
 # %%
