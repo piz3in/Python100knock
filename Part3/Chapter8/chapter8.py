@@ -131,4 +131,71 @@ nx.draw_networkx(G, font_color="w", node_color=active_node_coloring(list_timeser
 list_timeseries_active_num = [sum(lst) for lst in list_timeseries]
 
 plt.plot(list_timeseries_active_num)
+
+
+# %%
+# 会員数の時系列変化をシミュレートする
+# %%
+# 次の時刻の会員数をシミュレートする関数の定義
+def simulate_n_members(
+    n_people: int,
+    list_member: list,
+    join_probability: float,
+    cancel_probability: float,
+    df_links: pd.DataFrame,
+) -> list:
+    """
+    次の時刻の会員数をシミュレートする
+
+    Args:
+        n_people (int): シミュレート対象人数
+        list_member (list): 現在の、シミュレート対象の人が会員かどうか（会員なら1、非会員なら0）のリスト
+        join_probability (float): 口コミが伝わってかつ入会する確率
+        cancel_probability (float): 会員が退会する確率
+        df_links (pd.DataFrame): シミュレート対象の人同士の関係表（繋がりがあれば1、なければ0）
+
+    Returns:
+        list_member (list): 次の時刻の、シミュレート対象の人が会員かどうかのリスト
+    """
+    list_member_backup = list_member.copy()
+
+    for i in range(n_people):
+        if list_member_backup[i] == 1:
+            # 拡散
+            for j in range(n_people):
+                if (
+                    df_links.iloc[i, j + 1] == 1
+                    and determine_link(join_probability) == 1
+                ):
+                    list_member[j] = 1
+            # 消滅
+            if determine_link(cancel_probability) == 1:
+                list_member[i] = 0
+
+    return list_member
+
+
+# %%
+# シミュレーションの実行
+join_probability = 0.1
+cancel_probability = 0.05
+n_t = 100
+n_people = len(df_links)
+list_member = np.zeros(n_people)
+list_member[0] = 1
+
+list_timeseries = []
+list_timeseries.append(list_member.copy())
+
+for t in range(1, n_t + 1):
+    list_member = simulate_n_members(
+        n_people, list_member, join_probability, cancel_probability, df_links
+    )
+    list_timeseries.append(list_member.copy())
+
+# %%
+# 会員数の時系列変化を可視化する
+list_timeseries_num = [sum(lst) for lst in list_timeseries]
+
+plt.plot(list_timeseries_num)
 # %%
