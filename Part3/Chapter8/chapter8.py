@@ -239,3 +239,15 @@ plt.yticks(np.arange(0.0, 20.0, 5), np.arange(0.0, 1.0, 0.25))
 plt.tick_params(bottom=False, left=False, right=False, top=False)
 plt.show()
 # %%
+# スポーツジム会員全体のシミュレーション
+# %%
+# 1.データ読み込み
+# %%
+# ジム会員同士のSNSの繋がり有無テーブル
+df_member_links = pd.read_csv("input/links_members.csv")
+df_member_links.head()
+# %%
+# 各ジム会員の過去24ヶ月のジム利用状況テーブル
+df_member_info = pd.read_csv("input/info_members.csv")
+df_member_info.head()
+# %%
