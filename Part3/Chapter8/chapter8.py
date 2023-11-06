@@ -199,3 +199,43 @@ list_timeseries_num = [sum(lst) for lst in list_timeseries]
 
 plt.plot(list_timeseries_num)
 # %%
+# パラメータの全体像を「相図」を見ながら把握する
+# シミュレーションの条件（試行回数、パラメータの刻みの数）の設定
+n_t = 100
+n_join_conditions = 20
+n_cancel_conditions = 20
+# 各入会確率と退会確率下でのn_tヶ月後の会員数を格納する配列の作成
+phaseDiagram = np.zeros((n_join_conditions, n_cancel_conditions))
+
+# 初期の会員リスト（initial_list_active）の作成
+initial_list_active = np.zeros(n_people)
+initial_list_active[0] = 1
+
+for i_join in range(n_join_conditions):
+    # 入会確率を5%刻みで変化させる
+    join_probability = 0.05 * i_join
+
+    for i_cancel in range(n_cancel_conditions):
+        # 退会確率を5%刻みで変化させる
+        cancel_probability = 0.05 * i_cancel
+
+        # 会員リスト（list_active）の初期化
+        list_active = initial_list_active.copy()
+
+        # n_tヶ月後の会員数をシミュレートする
+        for t in range(n_t):
+            list_active = simulate_n_members(
+                n_people, list_active, join_probability, cancel_probability, df_links
+            )
+        phaseDiagram[i_join, i_cancel] = sum(list_active)
+
+# %%
+plt.matshow(phaseDiagram)
+plt.colorbar(shrink=0.8)
+plt.xlabel("cancel_probability")
+plt.ylabel("join_probability")
+plt.xticks(np.arange(0.0, 20.0, 5), np.arange(0.0, 1.0, 0.25))
+plt.yticks(np.arange(0.0, 20.0, 5), np.arange(0.0, 1.0, 0.25))
+plt.tick_params(bottom=False, left=False, right=False, top=False)
+plt.show()
+# %%
