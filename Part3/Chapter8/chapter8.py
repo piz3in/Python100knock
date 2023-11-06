@@ -251,3 +251,12 @@ df_member_links.head()
 df_member_info = pd.read_csv("input/info_members.csv")
 df_member_info.head()
 # %%
+# 2.各会員のリンク数のヒストグラムを作成する
+# 2-1.各会員のリンク数を計算する
+n_members = len(df_member_info)
+link_numbers = [sum(df_member_links["Node" + str(i)]) for i in range(n_members)]
+link_numbers
+# %%
+# 2-2.ヒストグラムを作成する
+plt.hist(link_numbers, bins=10, range=(0, 250))
+# %%
