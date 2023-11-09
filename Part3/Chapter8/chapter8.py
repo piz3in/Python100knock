@@ -313,3 +313,42 @@ for t in range(n_t - 1):
 
 estimated_join_probability = count_link_to_active / count_link
 print(f"推定活性化確率:{estimated_join_probability}")
+# %%
+# 実データとシミュレーションを比較する
+# 推定した活性化、非活性化確率を入会、退会確率に代入する
+join_probability = estimated_join_probability
+cancel_probability = estimated_cancel_probability
+
+# シミュレーション条件
+n_t = 24
+n_members = len(df_member_info.index)
+
+# 初期の会員リスト（initial_list_active）の作成
+initial_list_active = np.zeros(n_people)
+initial_list_active[0] = 1
+
+# シミュレーション結果を格納する配列
+list_timeseries = []
+list_active = initial_list_active.copy()
+list_timeseries.append(list_active.copy())
+
+for t in range(n_t):
+    list_active = simulate_n_members(
+        n_people, list_active, join_probability, cancel_probability, df_member_links
+    )
+    list_timeseries.append(list_active.copy())
+
+# シミュレーション結果（各月の会員数）
+list_timeseries_num = [sum(lst) for lst in list_timeseries]
+
+# 実際の各月の会員数（シミュレーション結果との比較用）
+list_timeseries_num_real = [sum(df_member_info[str(t)]) for t in range(n_t)]
+# %%
+# 可視化
+plt.plot(list_timeseries_num, label="simulated")
+plt.plot(list_timeseries_num_real, label="real")
+plt.xlabel("month")
+plt.ylabel("population")
+plt.legend(loc="lower right")
+plt.show()
+# %%
