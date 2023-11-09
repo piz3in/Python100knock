@@ -260,3 +260,56 @@ link_numbers
 # 2-2.ヒストグラムを作成する
 plt.hist(link_numbers, bins=10, range=(0, 250))
 # %%
+# 3.実データからパラメータ（活性化（利用しなかった翌月に利用する）確率と非活性化（利用した翌月に利用しなくなる）確率）を予測する
+n_t = len(df_member_info.columns) - 1
+print(f"利用データ期間:{n_t}ヶ月")
+# %%
+# 3-1.非活性化（利用した翌月に利用しなくなる）確率の推定
+# 全会員の利用データ期間最終月前月までの利用回数の合計
+count_active = df_member_info.iloc[:, 1:n_t].sum(axis=1).sum()
+count_active
+# %%
+# 全会員の利用月の翌月に利用しなかった回数の合計
+count_active_to_inactive = (
+    (
+        (df_member_info.iloc[:, 1:] == 1)  # 前月に利用していて、かつ、
+        & (df_member_info.iloc[:, 1:].shift(-1, axis=1) == 0)  # 当月利用しなかった
+    )
+    .sum(axis=1)  # 各ユーザーでの発生回数をカウント
+    .sum()  # 全ユーザーで集計
+)
+count_active_to_inactive
+# 非活性化確率 = 利用月の翌月に利用しなかった回数 / 全利用回数
+estimated_cancel_probability = count_active_to_inactive / count_active
+print(f"推定非活性化確率:{estimated_cancel_probability}")
+# %%
+# 3-2.活性化（利用しなかった翌月に利用する）確率の推定
+# 繋がりがある会員が利用した月に対象の会員が利用していない数のカウント
+count_link = 0
+# 繋がりがある会員が利用した月に対象の会員が利用しておらず、次月利用した数のカウント
+# ただし、同一月でカウントするのは１回のみ（他の繋がりがある会員で同一の現象が起こっていてもその月は＋１しかしない）
+count_link_to_active = 0
+
+for t in range(n_t - 1):
+    # 24ヶ月間の利用データから対象月に利用した会員の行のみを抽出したデータ（df_link_t）を作成する
+    df_link_t = df_member_info[df_member_info[str(t)] == 1]
+
+    temp_flag_count = np.zeros(n_members)
+
+    # 対象月に利用した会員毎にSNSの繋がり有無テーブルからその会員と繋がりのある会員の行のみを抽出したデータ（df_link_temp）を作成する
+    for i in df_link_t.index:
+        df_link_temp = df_member_links[df_member_links[f"Node{i}"] == 1]
+
+        # 対象月に利用した会員と繋がりのある会員毎に
+        for j in df_link_temp.index:
+            # その会員が対象月に利用していなければリンクをカウントする
+            # 書籍は誤りがある。（locではなくiloc参照にしており、Unnamed:0列を考慮できていない）
+            if df_member_info.loc[j, str(t)] == 0 and temp_flag_count[j] == 0:
+                count_link += 1
+                # さらに、その会員が次月に利用し、かつまだ対象月でカウントしていなければカウントする
+                if df_member_info.loc[j, str(t + 1)] == 1:
+                    temp_flag_count[j] = 1
+                    count_link_to_active += 1
+
+estimated_join_probability = count_link_to_active / count_link
+print(f"推定活性化確率:{estimated_join_probability}")
