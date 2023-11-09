@@ -352,3 +352,27 @@ plt.ylabel("population")
 plt.legend(loc="lower right")
 plt.show()
 # %%
+# シミュレーション条件
+n_t = 36
+
+# シミュレーション結果を格納する配列
+list_timeseries = []
+list_active = initial_list_active.copy()
+list_timeseries.append(list_active.copy())
+
+for t in range(n_t):
+    list_active = simulate_n_members(
+        n_people, list_active, join_probability, cancel_probability, df_member_links
+    )
+    list_timeseries.append(list_active.copy())
+
+# シミュレーション結果（各月の会員数）
+list_timeseries_num = [sum(lst) for lst in list_timeseries]
+
+# 可視化
+plt.plot(list_timeseries_num, label="simulated")
+plt.xlabel("month")
+plt.ylabel("population")
+plt.legend(loc="lower right")
+plt.show()
+# %%
